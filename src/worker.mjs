@@ -11,7 +11,8 @@ export default {
     };
     try {
       const auth = request.headers.get("Authorization");
-      const apiKey = auth?.split(" ")[1];
+      const apiKeys = auth?.split(" ")[1];
+      const apiKey = crypto.getRandomValues(apiKeys.split(","))
       const assert = (success) => {
         if (!success) {
           throw new HttpError("The specified HTTP method is not allowed for the requested resource", 400);
