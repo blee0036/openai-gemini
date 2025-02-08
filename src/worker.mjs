@@ -15,7 +15,8 @@ export default {
       if (!apiKeys) {
         throw new HttpError("403 No Auth", 403);
       }
-      const apiKey = crypto.getRandomValues(apiKeys.split(","))
+      let keyArr = apiKeys.split(",");
+      const apiKey = keyArr[Math.floor(Math.random() * keyArr.length)]
       const assert = (success) => {
         if (!success) {
           throw new HttpError("The specified HTTP method is not allowed for the requested resource", 400);
