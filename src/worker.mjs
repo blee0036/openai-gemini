@@ -12,6 +12,9 @@ export default {
     try {
       const auth = request.headers.get("Authorization");
       const apiKeys = auth?.split(" ")[1];
+      if (!apiKeys) {
+        throw new HttpError("403 No Auth", 403);
+      }
       const apiKey = crypto.getRandomValues(apiKeys.split(","))
       const assert = (success) => {
         if (!success) {
