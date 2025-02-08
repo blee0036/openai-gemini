@@ -17,6 +17,7 @@ export default {
       }
       let keyArr = apiKeys.split(",");
       const apiKey = keyArr[Math.floor(Math.random() * keyArr.length)]
+      console.log("use : " + apiKey);
       const assert = (success) => {
         if (!success) {
           throw new HttpError("The specified HTTP method is not allowed for the requested resource", 400);
