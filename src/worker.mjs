@@ -248,7 +248,10 @@ const parseImg = async (url) => {
   let mimeType, data;
   if (url.startsWith("http://") || url.startsWith("https://")) {
     try {
-      const response = await nativeFetch(url);
+      const response = await nativeFetch(url, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" }
+      });
       if (!response.ok) {
         throw new Error(`${response.status} ${response.statusText} (${url})`);
       }
@@ -750,17 +753,18 @@ class SocketFramesReader {
 }
 
 // Forward HTTP requests or WebSocket handshake and data based on the request type
-async function nativeFetch(req, dstUrl) {
+async function nativeFetch(dstUrl, req) {
   // Clean up the headers by removing those that match the filter criteria
   const cleanedHeaders = new Headers();
-  for (const [k, v] of req.headers) {
+  const headers = new Headers(req.headers); // 包装成Headers对象
+  for (const [k, v] of headers) {
     if (!HEADER_FILTER_RE.test(k)) {
       cleanedHeaders.set(k, v);
     }
   }
 
   // Check if the request is a WebSocket request
-  const upgradeHeader = req.headers.get("Upgrade")?.toLowerCase();
+  const upgradeHeader = headers.get("Upgrade")?.toLowerCase();
   const isWebSocket = upgradeHeader === "websocket";
   const targetUrl = new URL(dstUrl);
 
@@ -817,7 +821,7 @@ async function nativeFetch(req, dstUrl) {
     relayWebSocketFrames(client, socket, writer, reader);
     return new Response(null, { status: 101, webSocket: server });
   } else {
-    // For standard HTTP requests: set required headers (such as Host and disable compression)
+// 处理标准HTTP请求
     cleanedHeaders.set("Host", targetUrl.hostname);
     cleanedHeaders.set("accept-encoding", "identity");
 
@@ -827,7 +831,32 @@ async function nativeFetch(req, dstUrl) {
       { secureTransport: targetUrl.protocol === "https:" ? "on" : "off" }
     );
     const writer = socket.writable.getWriter();
-    // Construct the request line and headers
+
+    // 新增：处理请求体并设置Content-Length
+    let requestBody;
+    if (req.body) {
+      if (typeof req.body === 'string') {
+        requestBody = encoder.encode(req.body);
+      } else {
+        // 收集所有块并合并
+        const chunks = [];
+        for await (const chunk of req.body) {
+          chunks.push(typeof chunk === 'string' ? encoder.encode(chunk) : chunk);
+        }
+        const totalLength = chunks.reduce((acc, chunk) => acc + chunk.length, 0);
+        requestBody = new Uint8Array(totalLength);
+        let offset = 0;
+        for (const chunk of chunks) {
+          requestBody.set(chunk, offset);
+          offset += chunk.length;
+        }
+      }
+      cleanedHeaders.set('Content-Length', requestBody.length.toString());
+    } else {
+      cleanedHeaders.set('Content-Length', '0');
+    }
+
+    // 构造请求行和头部
     const requestLine =
       `${req.method} ${targetUrl.pathname}${targetUrl.search} HTTP/1.1\r\n` +
       Array.from(cleanedHeaders.entries())
@@ -837,14 +866,12 @@ async function nativeFetch(req, dstUrl) {
     log("Sending request", requestLine);
     await writer.write(encoder.encode(requestLine));
 
-    // If there is a request body, forward it to the target server
-    if (req.body) {
-      log("Forwarding request body");
-      for await (const chunk of req.body) {
-        await writer.write(chunk);
-      }
+    // 发送请求体
+    if (requestBody) {
+      await writer.write(requestBody);
     }
-    // Parse and return the target server's response
+
+    // 解析并返回响应
     return await parseResponse(socket.readable.getReader());
   }
 }
