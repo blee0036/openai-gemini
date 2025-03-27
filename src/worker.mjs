@@ -1,7 +1,7 @@
 import { Buffer } from "node:buffer";
 
 export default {
-  async nativeFetch (request) {
+  async fetch (request) {
     if (request.method === "OPTIONS") {
       return handleOPTIONS();
     }
