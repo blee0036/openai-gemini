@@ -24,7 +24,7 @@ async function getAnonymousToken() {
       method: "GET",
       headers: {
         "Accept": "application/json",
-        "User-Agent": "OpenAI-Proxy/1.0",
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/134.0.0.0 Safari/537.36",
       },
     });
 
@@ -48,7 +48,7 @@ async function getModels(token) {
         method: "GET",
         headers: {
           "Accept": "application/json",
-          "User-Agent": "OpenAI-Proxy/1.0",
+          "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/134.0.0.0 Safari/537.36",
           "Authorization": `Bearer anon-${token}`,
         },
       }
