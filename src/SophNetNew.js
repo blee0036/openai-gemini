@@ -127,6 +127,10 @@ async function getTokenFromKV(env) {
   }
 }
 
+async function invalidToken(env) {
+  await env.SOPHNET_KV.delete(TOKEN_KEY)
+}
+
 /**
  * Stores the token information into Cloudflare Workers KV with an expiration TTL.
  * Requires the KV namespace binding `SOPHNET_KV`.
@@ -299,7 +303,7 @@ async function getModels(token, retryCount = 0) {
  * @returns {Promise<Response>} The raw Response object from the SophNet API.
  * @throws {Error} If the request fails after maximum retries.
  */
-async function handleChatCompletions(token, requestBody, stream, retryCount = 0) {
+async function handleChatCompletions(token, requestBody, env, stream, retryCount = 0) {
   const modelId = requestBody.model || '';
   const webSearchEnable = modelId.includes("-Search");
   const fullContextEnable = modelId.includes("-Full-Context");
@@ -342,12 +346,12 @@ async function handleChatCompletions(token, requestBody, stream, retryCount = 0)
     );
 
     // If token is invalid/expired (401/403), refresh token and retry
-    if ((response.status === 401 || response.status === 403) && retryCount < MAX_RETRIES) {
+    if ((response.status === 401 || response.status === 403 || response.status === 422) && retryCount < MAX_RETRIES) {
       console.log(`Chat completion token expired or invalid (${response.status}), refreshing and retrying (${retryCount + 1}/${MAX_RETRIES})...`);
-      const newToken = await getAnonymousToken();
+      const newToken = await getAnonymousToken(env);
       const delay = getExponentialBackoffDelay(retryCount);
       await sleep(delay);
-      return await handleChatCompletions(newToken, requestBody, stream, retryCount + 1);
+      return await handleChatCompletions(newToken, requestBody, env, stream, retryCount + 1);
     }
 
     // Retry on 429 or 5xx errors
@@ -355,7 +359,7 @@ async function handleChatCompletions(token, requestBody, stream, retryCount = 0)
       const delay = getExponentialBackoffDelay(retryCount);
       console.warn(`Chat completion failed with status ${response.status}. Retrying in ${delay}ms... (${retryCount + 1}/${MAX_RETRIES})`);
       await sleep(delay);
-      return handleChatCompletions(token, requestBody, stream, retryCount + 1);
+      return handleChatCompletions(token, requestBody, stream, env, retryCount + 1);
     }
 
     if (!response.ok && response.status !== 401 && response.status !== 403 && response.status !== 429 && response.status < 500) {
@@ -389,7 +393,7 @@ async function handleChatCompletions(token, requestBody, stream, retryCount = 0)
       const delay = getExponentialBackoffDelay(retryCount);
       console.warn(`Chat completion network error. Retrying in ${delay}ms... (${retryCount + 1}/${MAX_RETRIES})`);
       await sleep(delay);
-      return handleChatCompletions(token, requestBody, stream, retryCount + 1);
+      return handleChatCompletions(token, requestBody, env, stream, retryCount + 1);
     }
     throw error; // Rethrow after max retries
   }
@@ -829,7 +833,7 @@ async function handleRequest(request, env) {
       const stream = requestBody.stream === true;
       const requestedModel = requestBody.model || 'unknown-model'; // Get model for logging/use
 
-      const sophNetResponse = await handleChatCompletions(token, requestBody, stream);
+      const sophNetResponse = await handleChatCompletions(token, requestBody, env, stream);
 
       // Check if handleChatCompletions returned an error Response directly
       if (sophNetResponse.status >= 400 && sophNetResponse.headers.get('content-type')?.includes('application/json')) {
