@@ -22,10 +22,11 @@ export default {
 
 const SOPHNET_BASE_URL = "https://www.sophnet.com/api";
 const PROJECT_UUID = "Ar79PWUQUAhjJOja2orHs"; // Replace with your actual Project UUID if different
-const TOKEN_KEY = "sophnet_anonymous_token"; // Key used in KV storage
+const TOKEN_KEY = "sophnet_anonymous_token_"; // Key used in KV storage
 const MAX_RETRIES = 5; // Max retries for API calls
 const INITIAL_RETRY_DELAY_MS = 100; // Initial delay for retries (ms)
 const MAX_RETRY_DELAY_MS = 5000; // Maximum delay for retries (ms)
+const TOKEN_COUNT_TOTAL = 30;
 
 // ====================================================================================
 // Helper Functions
@@ -40,12 +41,33 @@ function getRandomUserAgent() {
     "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0 Safari/537.36",
     "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.1 Safari/605.1.15",
     "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/119.0.0.0 Safari/537.36 Edg/119.0.2151.44",
-    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/119.0.0.0 Safari/537.36",
-    "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/119.0.0.0 Safari/537.36",
-    "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/119.0.0.0 Safari/537.36",
-    "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:109.0) Gecko/20100101 Firefox/119.0",
-    "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:109.0) Gecko/20100101 Firefox/119.0",
+    "Mozilla/5.0 (iPhone; CPU iPhone OS 16_2 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.2 Mobile/15E148 Safari/604.1",
+    "Mozilla/5.0 (Linux; Android 13; SM-A536U Build/TP1A.220624.014) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/117.0.5938.132 Mobile Safari/537.36",
     "Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:109.0) Gecko/20100101 Firefox/119.0",
+    "Mozilla/5.0 (Windows NT 11.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/118.0.5993.70 Safari/537.36",
+    "Mozilla/5.0 (Macintosh; Apple Silicon Mac OS X 13_4) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/117.0.5938.150 Safari/537.36",
+    "Mozilla/5.0 (iPad; CPU OS 16_3 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) CriOS/117.0.5938.132 Mobile/15E148 Safari/604.1",
+    "Mozilla/5.0 (Linux; Android 12; Pixel 7 Pro Build/SP2A.220505.008) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/116.0.5845.90 Mobile Safari/537.36",
+    "Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/535.11 (KHTML, like Gecko) Chrome/116.0.5845.88 Safari/537.36",
+    "Mozilla/5.0 (Macintosh; Intel Mac OS X 12_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/115.0.5790.170 Safari/537.36 Edg/115.0.1901.200",
+    "Mozilla/5.0 (iPhone; CPU iPhone OS 15_7 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/15.7 Mobile/15E148 Safari/604.1",
+    "Mozilla/5.0 (Linux; Android 11; Mi 10T Pro Build/RQ3A.210805.001; wv) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/116.0.5845.96 Mobile Safari/537.36",
+    "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/115.0.5790.171 Safari/537.36",
+    "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:115.0) Gecko/20100101 Firefox/115.0",
+    "Mozilla/5.0 (Macintosh; Apple Silicon Mac OS X 13_3) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.3 Safari/605.1.15",
+    "Mozilla/5.0 (iPad; CPU OS 15_6 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/15.6 Mobile/15E148 Safari/604.1",
+    "Mozilla/5.0 (Linux; Android 10; SM-G973F Build/QP1A.190711.020) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/115.0.5790.166 Mobile Safari/537.36",
+    "Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:112.0) Gecko/20100101 Firefox/112.0",
+    "Mozilla/5.0 (Windows NT 11.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.5735.199 Safari/537.36 Edg/114.0.1823.82",
+    "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.5735.134 Safari/537.36",
+    "Mozilla/5.0 (iPhone; CPU iPhone OS 14_7 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/14.7 Mobile/15E148 Safari/604.1",
+    "Mozilla/5.0 (Linux; Android 9; J8110 Build/55.0.A.1253; wv) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/115.0.5790.166 Mobile Safari/537.36",
+    "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/113.0.5672.129 Safari/537.36",
+    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/112.0.5615.138 Safari/537.36",
+    "Mozilla/5.0 (Macintosh; Apple Silicon Mac OS X 12_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/113.0.5672.92 Safari/537.36",
+    "Mozilla/5.0 (iPad; CPU OS 15_4 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/15.4 Mobile/15E148 Safari/604.1",
+    "Mozilla/5.0 (Linux; Android 12; SM-S901B Build/SP1A.210812.016) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.5735.199 Mobile Safari/537.36",
+    "Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:110.0) Gecko/20100101 Firefox/110.0"
   ];
   return userAgents[Math.floor(Math.random() * userAgents.length)];
 }
@@ -117,9 +139,9 @@ function convertToSuperscript(num) {
  * Requires the KV namespace binding `SOPHNET_KV`.
  * @returns {Promise<object|null>} The token info { token: string, expires: string } or null if not found/error.
  */
-async function getTokenFromKV(env) {
+async function getTokenFromKV(env, useTokenId) {
   try {
-    const tokenInfo = await env.SOPHNET_KV.get(TOKEN_KEY, { type: "json" });
+    const tokenInfo = await env.SOPHNET_KV.get(TOKEN_KEY + useTokenId, { type: "json" });
     return tokenInfo;
   } catch (error) {
     console.error("Error getting token from KV:", error);
@@ -127,8 +149,8 @@ async function getTokenFromKV(env) {
   }
 }
 
-async function invalidToken(env) {
-  await env.SOPHNET_KV.delete(TOKEN_KEY)
+async function invalidToken(env, useTokenId) {
+  await env.SOPHNET_KV.delete(TOKEN_KEY + useTokenId)
 }
 
 /**
@@ -138,11 +160,11 @@ async function invalidToken(env) {
  * @param {string} expires - The ISO 8601 expiration date string.
  * @returns {Promise<void>}
  */
-async function storeTokenToKV(token, expires, env) {
+async function storeTokenToKV(token, expires, env, useTokenId) {
   try {
     const ttl = calculateExpirationTtl(expires);
     if (ttl > 59) { // Only store if TTL is valid (at least 60 seconds)
-      await env.SOPHNET_KV.put(TOKEN_KEY, JSON.stringify({ token, expires }), { expirationTtl: ttl });
+      await env.SOPHNET_KV.put(TOKEN_KEY + useTokenId, JSON.stringify({ token, expires }), { expirationTtl: ttl });
     } else {
       console.warn(`Calculated TTL (${ttl}s) is too short. Token not stored in KV.`);
     }
@@ -161,7 +183,7 @@ async function storeTokenToKV(token, expires, env) {
  * @returns {Promise<string>} The fetched anonymous token.
  * @throws {Error} If fetching fails after maximum retries.
  */
-async function getAnonymousToken(env, retryCount = 0) {
+async function getAnonymousToken(env, useTokenId, retryCount = 0) {
   try {
     const response = await nativeFetch(`${SOPHNET_BASE_URL}/sys/login/anonymous`, {
       method: "GET",
@@ -176,7 +198,7 @@ async function getAnonymousToken(env, retryCount = 0) {
       const delay = getExponentialBackoffDelay(retryCount);
       console.warn(`Get token failed with status ${response.status}. Retrying in ${delay}ms... (${retryCount + 1}/${MAX_RETRIES})`);
       await sleep(delay);
-      return getAnonymousToken(retryCount + 1);
+      return getAnonymousToken(env, useTokenId, retryCount + 1);
     }
 
     if (!response.ok) {
@@ -187,7 +209,7 @@ async function getAnonymousToken(env, retryCount = 0) {
 
     const data = await response.json();
     if (data && data.result && data.result.anonymousToken && data.result.expires) {
-      await storeTokenToKV(data.result.anonymousToken, data.result.expires, env);
+      await storeTokenToKV(data.result.anonymousToken, data.result.expires, env, useTokenId);
       return data.result.anonymousToken;
     } else {
       console.error("Invalid token response structure:", data);
@@ -200,7 +222,7 @@ async function getAnonymousToken(env, retryCount = 0) {
       const delay = getExponentialBackoffDelay(retryCount);
       console.warn(`Get token network error. Retrying in ${delay}ms... (${retryCount + 1}/${MAX_RETRIES})`);
       await sleep(delay);
-      return getAnonymousToken(retryCount + 1);
+      return getAnonymousToken(env, useTokenId, retryCount + 1);
     }
     throw error; // Rethrow after max retries or for non-retryable errors
   }
@@ -211,8 +233,8 @@ async function getAnonymousToken(env, retryCount = 0) {
  * @returns {Promise<string>} A valid anonymous token.
  * @throws {Error} If unable to retrieve a valid token.
  */
-async function getValidToken(env) {
-  const tokenInfo = await getTokenFromKV(env);
+async function getValidToken(env, useTokenId) {
+  const tokenInfo = await getTokenFromKV(env, useTokenId);
 
   if (tokenInfo && tokenInfo.token && tokenInfo.expires && new Date(tokenInfo.expires) > new Date()) {
     // Optional: Refresh token in the background if it's close to expiring
@@ -225,7 +247,7 @@ async function getValidToken(env) {
   }
   // Otherwise, fetch a new token
   console.log("No valid token in KV or expired, fetching new token...");
-  return await getAnonymousToken(env);
+  return await getAnonymousToken(env, useTokenId);
 }
 
 /**
@@ -235,7 +257,7 @@ async function getValidToken(env) {
  * @returns {Promise<Array<object>>} An array of SophNet model objects.
  * @throws {Error} If fetching fails after maximum retries.
  */
-async function getModels(token, retryCount = 0) {
+async function getModels(env, token, useToeknId, retryCount = 0) {
   try {
     const response = await nativeFetch(
       `${SOPHNET_BASE_URL}/public/playground/models?projectUuid=${PROJECT_UUID}`,
@@ -252,11 +274,11 @@ async function getModels(token, retryCount = 0) {
     // If token is invalid/expired (401/403), refresh token and retry
     if ((response.status === 401 || response.status === 403) && retryCount < MAX_RETRIES) {
       console.log(`Token expired or invalid (${response.status}), refreshing and retrying models request (${retryCount + 1}/${MAX_RETRIES})...`);
-      const newToken = await getAnonymousToken(); // Fetch a fresh token
+      const newToken = await getAnonymousToken(env, useToeknId); // Fetch a fresh token
       // Add a small delay before retrying with the new token
       const delay = getExponentialBackoffDelay(retryCount);
       await sleep(delay);
-      return await getModels(newToken, retryCount + 1); // Retry with the new token
+      return await getModels(env, useToeknId, newToken, retryCount + 1); // Retry with the new token
     }
 
     // Retry on 429 or 5xx errors
@@ -265,7 +287,7 @@ async function getModels(token, retryCount = 0) {
       console.warn(`Get models failed with status ${response.status}. Retrying in ${delay}ms... (${retryCount + 1}/${MAX_RETRIES})`);
       await sleep(delay);
       // Retry with the *same* token first. If it fails with 401/403, the logic above will handle refresh.
-      return getModels(token, retryCount + 1);
+      return getModels(env, useToeknId, token, retryCount + 1);
     }
 
 
@@ -277,9 +299,6 @@ async function getModels(token, retryCount = 0) {
 
     const data = await response.json();
 
-    // Optional: Background token refresh after successful request
-    // getAnonymousToken().catch(err => console.error("Background token refresh failed:", err));
-
     return data.result || []; // Return empty array if result is missing
   } catch (error) {
     console.error("Error getting models:", error);
@@ -288,10 +307,14 @@ async function getModels(token, retryCount = 0) {
       const delay = getExponentialBackoffDelay(retryCount);
       console.warn(`Get models network error. Retrying in ${delay}ms... (${retryCount + 1}/${MAX_RETRIES})`);
       await sleep(delay);
-      return getModels(token, retryCount + 1);
+      return getModels(env, useToeknId, token, retryCount + 1);
     }
     throw error; // Rethrow after max retries or for non-retryable errors
   }
+}
+
+function genRandomToeknId() {
+  return Math.floor(Math.random() * TOKEN_COUNT_TOTAL) + 1
 }
 
 /**
@@ -303,7 +326,7 @@ async function getModels(token, retryCount = 0) {
  * @returns {Promise<Response>} The raw Response object from the SophNet API.
  * @throws {Error} If the request fails after maximum retries.
  */
-async function handleChatCompletions(token, requestBody, env, stream, retryCount = 0) {
+async function handleChatCompletions(token, requestBody, env, randomId, stream, retryCount = 0) {
   const modelId = requestBody.model || '';
   const webSearchEnable = modelId.includes("-Search");
   const fullContextEnable = modelId.includes("-Full-Context");
@@ -348,10 +371,10 @@ async function handleChatCompletions(token, requestBody, env, stream, retryCount
     // If token is invalid/expired (401/403), refresh token and retry
     if ((response.status === 401 || response.status === 403 || response.status === 422) && retryCount < MAX_RETRIES) {
       console.log(`Chat completion token expired or invalid (${response.status}), refreshing and retrying (${retryCount + 1}/${MAX_RETRIES})...`);
-      const newToken = await getAnonymousToken(env);
+      const newToken = await getAnonymousToken(env, randomId);
       const delay = getExponentialBackoffDelay(retryCount);
       await sleep(delay);
-      return await handleChatCompletions(newToken, requestBody, env, stream, retryCount + 1);
+      return await handleChatCompletions(newToken, requestBody, env, randomId, stream, retryCount + 1);
     }
 
     // Retry on 429 or 5xx errors
@@ -359,7 +382,7 @@ async function handleChatCompletions(token, requestBody, env, stream, retryCount
       const delay = getExponentialBackoffDelay(retryCount);
       console.warn(`Chat completion failed with status ${response.status}. Retrying in ${delay}ms... (${retryCount + 1}/${MAX_RETRIES})`);
       await sleep(delay);
-      return handleChatCompletions(token, requestBody, stream, env, retryCount + 1);
+      return handleChatCompletions(token, requestBody, stream, env, randomId, retryCount + 1);
     }
 
     if (!response.ok && response.status !== 401 && response.status !== 403 && response.status !== 429 && response.status < 500) {
@@ -380,10 +403,6 @@ async function handleChatCompletions(token, requestBody, env, stream, retryCount
       throw new Error(`Chat completion failed: ${response.status}`);
     }
 
-
-    // Optional: Background token refresh after successful request
-    // getAnonymousToken().catch(err => console.error("Background token refresh failed:", err));
-
     return response; // Return the raw response on success or for retryable errors handled above
 
   } catch (error) {
@@ -393,7 +412,7 @@ async function handleChatCompletions(token, requestBody, env, stream, retryCount
       const delay = getExponentialBackoffDelay(retryCount);
       console.warn(`Chat completion network error. Retrying in ${delay}ms... (${retryCount + 1}/${MAX_RETRIES})`);
       await sleep(delay);
-      return handleChatCompletions(token, requestBody, env, stream, retryCount + 1);
+      return handleChatCompletions(token, requestBody, env, randomId, stream, retryCount + 1);
     }
     throw error; // Rethrow after max retries
   }
@@ -788,10 +807,11 @@ async function handleRequest(request, env) {
   // --- Authentication/Token Handling ---
   // You might want to add your own authentication layer here if this worker
   // is not intended for public use. For now, it relies solely on the SophNet token.
+  let randomId = genRandomToeknId();
 
   let token;
   try {
-    token = await getValidToken(env);
+    token = await getValidToken(env, randomId);
     if (!token) {
       throw new Error("Failed to retrieve a valid SophNet token.");
     }
@@ -810,7 +830,7 @@ async function handleRequest(request, env) {
   try {
     // Route: Get Models
     if (path === "/v1/models" && request.method === "GET") {
-      const sophNetModels = await getModels(token);
+      const sophNetModels = await getModels(env, token, randomId);
       const openAIModels = transformModelsToOpenAIFormat(sophNetModels);
       return new Response(JSON.stringify(openAIModels), {
         status: 200,
@@ -833,7 +853,7 @@ async function handleRequest(request, env) {
       const stream = requestBody.stream === true;
       const requestedModel = requestBody.model || 'unknown-model'; // Get model for logging/use
 
-      const sophNetResponse = await handleChatCompletions(token, requestBody, env, stream);
+      const sophNetResponse = await handleChatCompletions(token, requestBody, env, randomId, stream);
 
       // Check if handleChatCompletions returned an error Response directly
       if (sophNetResponse.status >= 400 && sophNetResponse.headers.get('content-type')?.includes('application/json')) {
