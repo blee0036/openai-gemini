@@ -1,5 +1,5 @@
 // 自定义转发
-const OPENAI_URL = "https://www.sophnet.com/api/open-apis"
+const OPENAI_URL = "https://api.gmi-serving.com"
 export default {
   async fetch(request, env, ctx) {
     return handleRequest(request, env);
@@ -19,8 +19,25 @@ async function handleRequest(request, env) {
     const targetUrlObj = new URL(targetUrl);
     const targetHost = targetUrlObj.host;
 
+    const auth = request.headers.get("Authorization");
+    let apiKeys = auth?.split(" ")[1];
+    if (!apiKeys) {
+      apiKeys = env.OPENAI_API_KEY;
+    }
+    if (!apiKeys) {
+      // 如果不是 /v1/completions 的 POST 请求，返回自定义页面
+      return new Response('Hello', {
+        status: 403,
+        headers: {'Content-Type': 'text/plain; charset=utf-8'}
+      })
+    }
+    let keyArr = apiKeys.split(",");
+    const apiKey = keyArr[Math.floor(Math.random() * keyArr.length)]
+    console.log("use : " + apiKey);
+
     let headers = new Headers(request.headers);
     headers.set('Host', targetHost);
+    headers.set('Authorization', `Bearer ${apiKey}`);
     headers.delete("X-Forwarded-Proto")
     headers.delete("X-Stainless-Arch")
     headers.delete("X-Stainless-Package-Version")
@@ -32,7 +49,7 @@ async function handleRequest(request, env) {
     headers.delete("X-Stainless-Lang")
 
     // 发送请求到 OpenAI API
-    const response = await nativeFetch(targetUrl, {
+    const response = await fetch(targetUrl, {
       method: request.method,
       headers: headers,
       body: request.body

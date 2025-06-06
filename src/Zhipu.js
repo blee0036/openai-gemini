@@ -1,5 +1,5 @@
 // 自定义转发
-const OPENAI_URL = "https://www.sophnet.com/api/open-apis"
+const OPENAI_URL = "https://open.bigmodel.cn"
 export default {
   async fetch(request, env, ctx) {
     return handleRequest(request, env);
